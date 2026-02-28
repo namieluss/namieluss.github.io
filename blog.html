@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Suleiman — Blog</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Blog posts by Suleiman on Medium">
+    <meta name="author" content="Suleiman">
+
+    <link rel="shortcut icon" href="static/images/favicon.ico">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --accent: #4f46e5;
+            --accent-light: #818cf8;
+            --accent-dark: #3730a3;
+            --surface: #f8fafc;
+            --card-bg: #ffffff;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--surface);
+            color: #1e293b;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 80px 0 60px;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 480px; height: 480px;
+            background: radial-gradient(circle, rgba(129,140,248,.25) 0%, transparent 70%);
+            top: -140px; right: -120px;
+            border-radius: 50%;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 340px; height: 340px;
+            background: radial-gradient(circle, rgba(99,102,241,.2) 0%, transparent 70%);
+            bottom: -140px; left: -120px;
+            border-radius: 50%;
+        }
+        .hero-title {
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        .hero-sub {
+            color: #c7d2fe;
+            font-size: 1rem;
+            max-width: 580px;
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.07);
+            transition: box-shadow .25s, transform .25s;
+            background: var(--card-bg);
+        }
+        .card:hover { box-shadow: 0 10px 30px rgba(0,0,0,.12); transform: translateY(-3px); }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--accent);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .badge-tag {
+            background: #eef2ff;
+            color: #4338ca;
+            border: 1px solid #e0e7ff;
+            font-size: .72rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+
+        .post-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+        }
+
+        .empty-state {
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<header class="hero">
+    <div class="container position-relative" style="z-index:1">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <p class="text-uppercase fw-semibold mb-2" style="color:#a5b4fc;font-size:.8rem;letter-spacing:.12em">Medium Feed</p>
+                <h1 class="hero-title mb-2">Blog</h1>
+                <p class="hero-sub mb-0">Curated writing from Suleiman on engineering, AI, productivity, and beyond. Posts are pulled live from Medium.</p>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="section-title mb-0"><i class="bi bi-journal-text"></i> Latest Posts</h2>
+        <a href="https://medium.com/@namieluss" target="_blank" class="btn btn-outline-primary btn-sm">View on Medium</a>
+    </div>
+
+    <div id="posts" class="row g-4">
+        <div class="col-12 text-center empty-state" id="loading">
+            <div class="spinner-border text-primary me-2" role="status"></div>
+            Loading posts...
+        </div>
+    </div>
+</main>
+
+<footer class="py-4 mt-4" style="background:#1e1b4b;color:#94a3b8;font-size:.85rem;">
+    <div class="container d-flex flex-wrap justify-content-between">
+        <span><span style="color:#818cf8;font-weight:600">Suleiman</span> — Software Engineer</span>
+        <span>&copy; 2026 All rights reserved.</span>
+    </div>
+</footer>
+
+<script>
+(function() {
+    const postsContainer = document.getElementById('posts');
+    const loadingEl = document.getElementById('loading');
+
+    const FEED_URLS = [
+        'https://api.rss2json.com/v1/api.json?rss_url=https://medium.com/feed/@namieluss&count=50',
+        'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://medium.com/feed/@namieluss')
+    ];
+
+    function renderPosts(items) {
+        postsContainer.innerHTML = '';
+        if (!items || !items.length) {
+            postsContainer.innerHTML = '<div class="col-12 text-center empty-state">No posts available right now.</div>';
+            return;
+        }
+        const frag = document.createDocumentFragment();
+        items.forEach(item => {
+            const col = document.createElement('div');
+            col.className = 'col-md-6 col-lg-4';
+
+            const card = document.createElement('div');
+            card.className = 'card h-100 p-3';
+
+            const imgSrc = item.thumbnail || item.image;
+            if (imgSrc) {
+                const img = document.createElement('img');
+                img.className = 'post-img mb-3';
+                img.src = imgSrc;
+                img.alt = item.title;
+                card.appendChild(img);
+            }
+
+            const title = document.createElement('h5');
+            title.className = 'fw-semibold';
+            title.textContent = item.title;
+            card.appendChild(title);
+
+            if (item.subtitle) {
+                const sub = document.createElement('div');
+                sub.className = 'text-muted mb-2';
+                sub.textContent = item.subtitle;
+                card.appendChild(sub);
+            }
+
+            const meta = document.createElement('div');
+            meta.className = 'text-muted mb-2';
+            meta.style.fontSize = '.85rem';
+            const d = new Date(item.pubDate || item.pubdate || item.pub_date);
+            meta.textContent = isNaN(d) ? '' : d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+            card.appendChild(meta);
+
+            const snippet = (item.snippet || item.description || '').replace(/\s+/g, ' ').trim();
+            if (snippet) {
+                const desc = document.createElement('p');
+                desc.className = 'text-secondary mb-3';
+                desc.textContent = snippet.slice(0, 240) + (snippet.length > 240 ? '...' : '');
+                card.appendChild(desc);
+            }
+
+            if (item.categories && item.categories.length) {
+                const tagsWrap = document.createElement('div');
+                tagsWrap.className = 'd-flex flex-wrap gap-1 mb-3';
+                item.categories.slice(0, 4).forEach(tag => {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge-tag';
+                    badge.textContent = tag;
+                    tagsWrap.appendChild(badge);
+                });
+                card.appendChild(tagsWrap);
+            }
+
+            const link = document.createElement('a');
+            link.href = item.link;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.className = 'btn btn-primary btn-sm';
+            link.textContent = 'Read on Medium';
+            card.appendChild(link);
+
+            col.appendChild(card);
+            frag.appendChild(col);
+        });
+        postsContainer.appendChild(frag);
+    }
+
+    function showError(msg) {
+        postsContainer.innerHTML = `<div class="col-12 text-center empty-state">${msg}</div>`;
+    }
+
+    function stripHtml(text) {
+        const div = document.createElement('div');
+        div.innerHTML = text || '';
+        return (div.textContent || div.innerText || '').trim();
+    }
+
+    function parseRssXml(xmlText) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(xmlText, 'text/xml');
+        const items = Array.from(doc.querySelectorAll('item'));
+        return items.map(item => {
+            const title = item.querySelector('title')?.textContent?.trim() || '';
+            const link = item.querySelector('link')?.textContent?.trim() || '';
+            const pubDate = item.querySelector('pubDate')?.textContent?.trim() || '';
+            const categories = Array.from(item.querySelectorAll('category')).map(c => c.textContent.trim());
+            const contentHtml = item.querySelector('content\\:encoded')?.textContent || item.querySelector('description')?.textContent || '';
+            const thumbnailMatch = contentHtml.match(/src=\"(https:\/\/cdn-images[^\"]+)\"/);
+            const plain = stripHtml(contentHtml);
+            return {
+                title,
+                link,
+                pubDate,
+                description: plain,
+                snippet: plain,
+                subtitle: plain.slice(0, 120),
+                categories,
+                thumbnail: thumbnailMatch ? thumbnailMatch[1] : '',
+                image: thumbnailMatch ? thumbnailMatch[1] : ''
+            };
+        });
+    }
+
+    async function loadFeed() {
+        for (const url of FEED_URLS) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) continue;
+
+                if (url.includes('rss2json')) {
+                    const data = await res.json();
+                    if (!data || data.status !== 'ok') continue;
+                    const items = (data.items || []).map(item => {
+                        const plain = stripHtml(item.content || item.description);
+                        const imgMatch = (item.content || item.description || '').match(/src=\"(https:\/\/cdn-images[^\"]+)/);
+                        const img = item.thumbnail || (imgMatch ? imgMatch[1] : '');
+                        const subtitle = (item.contentSnippet || plain || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+                        return {
+                            title: item.title,
+                            link: item.link,
+                            pubDate: item.pubDate,
+                            description: plain,
+                            snippet: item.contentSnippet || plain,
+                            subtitle,
+                            categories: item.categories || [],
+                            thumbnail: item.thumbnail || '',
+                            image: img
+                        };
+                    });
+                    return items;
+                } else {
+                    const xmlText = await res.text();
+                    return parseRssXml(xmlText);
+                }
+            } catch (e) {
+                // try next endpoint
+            }
+        }
+        return null;
+    }
+
+    (async () => {
+        const items = await loadFeed();
+        loadingEl?.remove();
+        if (!items) {
+            showError('Unable to load posts right now.');
+            return;
+        }
+        renderPosts(items);
+    })();
+})();
+</script>
+
+</body>
+</html>

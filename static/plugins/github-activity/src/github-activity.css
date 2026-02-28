@@ -47,8 +47,8 @@ html, body {
 
 span.gha-time {
   color: #bbb;
-  font-weight: normal; 
-  font-size: 12px; 
+  font-weight: normal;
+  font-size: 12px;
 }
 
 .gha-feed a {
@@ -197,7 +197,7 @@ span.gha-time {
   display: inline;
   float: left;
   clear: both;
-  margin: 6px auto; 
+  margin: 6px auto;
   width: 50px;
   color: #bbb;
   text-align: center;
@@ -273,8 +273,8 @@ span.gha-time {
 
 .gha-time {
   color: #bbb;
-  font-weight: normal; 
-  font-size: 12px; 
+  font-weight: normal;
+  font-size: 12px;
 }
 
 .gha-clear { clear: both; }
